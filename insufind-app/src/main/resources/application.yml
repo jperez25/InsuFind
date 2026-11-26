@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: insufind-app
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/insufind}
+    username: ${DB_USER:insufind}
+    password: ${DB_PASSWORD:changeme}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    # Demo data (fictional people) lives in db/seed. Drop that location for a real environment.
+    locations: classpath:db/migration,classpath:db/seed
+    # Seeds are versioned V1000+, so a new schema migration is lower than seeds already applied on existing databases.
+    out-of-order: true
+
+server:
+  port: ${PORT:8080}
+
+logging:
+  structured:
+    format:
+      console: ecs
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health

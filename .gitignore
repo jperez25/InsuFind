@@ -1,0 +1,13 @@
+target/
+.idea/
+*.iml
+.DS_Store
+*.log
+.env
+
+# Frontend
+node_modules/
+insufind-ui/dist/
+
+# Playwright artifacts (traces, screenshots, videos)
+insufind-ui-tests/playwright-artifacts/

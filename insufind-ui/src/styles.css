@@ -1,0 +1,28 @@
+:root { font-family: system-ui, sans-serif; color: #1f2937; }
+body { margin: 0; background: #f8fafc; }
+.app-header { display: flex; gap: 1rem; align-items: baseline; padding: 1rem 2rem; background: #0f172a; color: #e2e8f0; }
+.app-header a { color: #fff; font-weight: 700; font-size: 1.25rem; text-decoration: none; }
+main { max-width: 64rem; margin: 1.5rem auto; padding: 0 1rem; }
+.search-form { display: flex; gap: 1rem; align-items: end; flex-wrap: wrap; margin-bottom: 1rem; }
+.search-form label { display: flex; flex-direction: column; gap: .25rem; font-size: .85rem; }
+input, select, button { font: inherit; padding: .5rem .75rem; }
+input { min-width: 20rem; }
+table { width: 100%; border-collapse: collapse; background: #fff; }
+th, td { text-align: left; padding: .5rem .75rem; border-bottom: 1px solid #e5e7eb; }
+.pager { display: flex; gap: 1rem; align-items: center; margin-top: 1rem; }
+dl { display: grid; grid-template-columns: 10rem 1fr; gap: .5rem 1rem; }
+dt { font-weight: 600; }
+dd { margin: 0; }
+.tabs { display: flex; gap: .25rem; margin-bottom: 1rem; border-bottom: 1px solid #cbd5e1; }
+.tabs button { border: 1px solid transparent; border-bottom: 0; background: none; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: #fff; border-color: #cbd5e1; font-weight: 600; }
+fieldset { border: 1px solid #e5e7eb; border-radius: .25rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+.search-form input { min-width: 12rem; }
+.search-form input[type="checkbox"] { min-width: 0; }
+.search-form label.check { flex-direction: row; align-items: center; gap: .35rem; }
+.table-filters { display: flex; gap: 1rem; align-items: end; flex-wrap: wrap; margin-bottom: .5rem; }
+.table-filters label { display: flex; flex-direction: column; gap: .25rem; font-size: .85rem; }
+.table-tools { margin-bottom: .5rem; }
+.column-picker { display: flex; gap: .75rem; margin-top: .5rem; background: #fff; }
+.column-picker label { display: flex; align-items: center; gap: .25rem; font-size: .85rem; }
+.sort-button { border: 0; background: none; padding: 0; font-weight: 700; cursor: pointer; }
