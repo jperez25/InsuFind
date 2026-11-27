@@ -8,7 +8,13 @@ paths:
 - Playwright for Java + JUnit 5; Playwright's `assertThat(locator)` for anything in the page, AssertJ for plain values.
   A `BaseUiTest` owns browser lifecycle and config.
 - Page Object Model: one class per page or component in `pages/`. Page objects expose intent (`searchFor(...)`,
-  `results()`), hold the locators, and never contain assertions. UI tests hold the assertions.
+  `results()`), hold the locators, and never contain assertions.
+- Fluent navigation: every page action returns the page the user lands on (`searchFor(..)` -> `SearchPage`,
+  `openClaim(..)` -> `ClaimDetailPage`). Tests start from `BaseUiTest.searchPage()` / `claimDetailPage()`.
+- Fluent validation: assertions live in `validators/` (one `*Validator` per page, extends `ValidatorBase`), reached with
+  `page.validate()`; each check returns the validator and `.and()` returns to the page. Mirrors the API tests' validators.
+- Match dynamically (partial, case-insensitive, "every row contains") unless using a unique identifier
+  (claim number, VIN, license). Never hard-code exact result lists for names.
 - Locators: prefer `getByTestId`, then `getByRole`/`getByLabel`. Never XPath, CSS classes or positional selectors.
 - Never `Thread.sleep` or fixed waits. Rely on Playwright auto-waiting and web-first assertions
   (`assertThat(locator).hasCount(3)`); wait explicitly on a response or locator state when needed.

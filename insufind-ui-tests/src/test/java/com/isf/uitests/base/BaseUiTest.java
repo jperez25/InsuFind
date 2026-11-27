@@ -1,5 +1,7 @@
 package com.isf.uitests.base;
 
+import com.isf.uitests.pages.ClaimDetailPage;
+import com.isf.uitests.pages.SearchPage;
 import com.isf.uitests.support.Env;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
@@ -67,6 +69,16 @@ public abstract class BaseUiTest {
         context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true).setSources(true));
         tracingStopped = false;
         page = context.newPage();
+    }
+
+    /** Starting point of a journey: the search page, freshly opened. */
+    protected SearchPage searchPage() {
+        return new SearchPage(page).open();
+    }
+
+    /** Starting point for a direct route to a claim detail. */
+    protected ClaimDetailPage claimDetailPage() {
+        return new ClaimDetailPage(page);
     }
 
     @AfterEach

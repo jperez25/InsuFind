@@ -9,7 +9,8 @@ Args: feature/page and scenario.
 2. Use or extend the page object in `pages/` (one per page/component). Add locators with `getByTestId` there; if the
    element has no `data-testid`, add it in `insufind-ui/` first. Page objects act and read, they never assert.
 3. Seed data (`support/SeedData`) is read-only. If the test creates data, use a factory from `support` (`aDriver().withFullName(...)`) with unique values.
-4. Assert in the test with Playwright's `assertThat(locator)` (auto-waiting). No `Thread.sleep`.
-5. Tag the test `@Tag("smoke")` or `@Tag("regression")`.
+4. Chain the journey: `searchPage().searchFor(..).validate().<checks>().and().openClaim(..)...`. Add checks to the page's
+   `*Validator` in `validators/` (Playwright `assertThat`, auto-waiting). No `Thread.sleep`. Prefer partial/dynamic checks.
+5. Tag the test with `@Tag(SMOKE)` or `@Tag(REGRESSION)` from `support/TestGroups`.
 6. Run it: `./mvnw -pl insufind-ui-tests test -DskipUiTests=false -Dtest=<Feature>Test` (stack running).
 7. Follow `.claude/rules/testing.md`.
