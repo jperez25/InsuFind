@@ -25,3 +25,5 @@ paths:
   Field names are full words (`licenseNumber`, not `lic`).
 - Tag every test `smoke` or `regression`.
 - On failure the base class saves a Playwright trace (and screenshot) to `insufind-ui-tests/playwright-artifacts/`.
+- Keep the docs in step: when you add, remove or change tests, page objects, validators or these rules, update
+  `docs/project-setup.md` (section 6: framework and test list, section 9: verification count) in the same change.

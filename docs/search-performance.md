@@ -77,10 +77,10 @@ Resource notes for the run:
    rows are needed. Not planned.
 
 ## 6. Test impact
-- The UI and integration tests were written against 12 claims. With 1000 seeded claims, any assertion on total counts
-  or page counts must be rechecked.
-- The UI types and screens do not show the new fields yet (`claimType`, `reportedDate`, `vehiclePlate`, `vehicleVin`,
-  `policyState`, `lossState`). Add them with `data-testid` attributes when the UI adopts the new search.
+- The UI tests no longer assume 12 claims: they match dynamically and derive totals and page counts from the page.
+  Keep it that way; only unique identifiers (claim number, VIN, license) are matched exactly.
+- The UI shows the new fields (`claimType`, `reportedDate`, `vehiclePlate`, `vehicleVin`, `policyState`, `lossState`)
+  on the detail page and as optional table columns, with `data-testid` attributes, and the UI tests cover them.
 - Every new filter, index or ranking change needs an integration test against `POST /api/claims/search` first, then a
   UI test.
 

@@ -56,19 +56,30 @@ InsuFind/
   `application.yml`; drop that location for a real environment. All people and numbers are fictional.
 
 ## 5. Frontend
-- Search page (`/`): query input, scope select (any / insured / other drivers), results table, empty state, error
+- Search page (`/`): foldable "Optional search fields" section (loss and reported period, folded unless the URL has a
+  period), query input, scope select (any / insured / other drivers), results table, empty state, error
   state, pagination. The search state lives in the URL (`?q=&scope=&page=`), so reload and Back restore it.
   Nothing is fetched until the first search (an empty search lists all claims).
-- Claim detail page (`/claims/:id`): claim data, insured driver, other drivers, not-found state, back button.
+- Claim detail page (`/claims/:id`): claim data (status, type, dates, states, policy, plate, VIN, location,
+  description), insured driver, other drivers ("None" when empty), not-found and load-error states, back button.
 - The browser only calls `/api`. In dev Vite (port 5173) proxies `/api` to the backend on 8080.
 - Every element a test touches has a `data-testid`.
 
 ## 6. UI test framework
 - `BaseUiTest`: one Playwright and Browser per test class, a fresh `BrowserContext` and `Page` per test. On failure it
   saves a trace (`<Class>.<test>-trace.zip`) and a full-page screenshot to `insufind-ui-tests/playwright-artifacts/`.
+  It also offers `searchPage()` and `claimDetailPage()` as the start of a journey.
 - `pages/`: page objects (`SearchPage`, `ClaimDetailPage`). They act and read, and hold locators. They never assert.
-- `tests/`: tests hold the assertions, using Playwright web-first `assertThat(locator)`.
-- `support/`: `Env` (config), `SeedData` (read-only reference data), `SearchScope` and `ClaimStatus` enums.
+  Fluent navigation: every action returns the page the user lands on, and `validate()` switches to the checks.
+- `validators/`: fluent validation, one `*Validator` per page (`SearchPageValidator`, `ClaimDetailValidator`) on top of
+  `ValidatorBase`. Checks use Playwright web-first assertions, each returns the validator, `.and()` returns the page.
+  Same idea as the validators in `insufind-integrations-tests`.
+- `tests/`: tests chain navigation and validation, e.g.
+  `searchPage().searchFor(..).validate().showsResults().and().openClaim(..).validate().hasClaimNumber(..)`.
+- `support/`: `Env` (config), `SeedData` (read-only reference values), `TestGroups` (tag constants), and the
+  `SearchScope`, `ClaimStatus` and `ClaimType` enums.
+- Matching: dynamic (partial, case-insensitive, "every row contains") unless using a unique identifier (claim number,
+  VIN, license). The DB holds 1000 claims (bulk seed), so exact name result lists are not used.
 - Parallelism: test classes run in parallel (3 threads), methods inside a class run sequentially
   (`junit-platform.properties`).
 - Config: `BASE_URL` (default `http://localhost:5173`), `HEADLESS` (default true), `BROWSER` (`chromium`, `firefox`
@@ -77,10 +88,17 @@ InsuFind/
 - UI tests are skipped by default so `./mvnw test` does not need a running stack. Enable with `-DskipUiTests=false`.
 - Playwright downloads the browsers on the first run (this takes a while once).
 
-### Current tests (`SearchClaimsTest`, 10 tests)
-Search by name (smoke), partial and case-insensitive match, insured scope, other-drivers scope, search by license
-number, no results, empty query with pagination, open a claim and go back (query restored), unknown claim id, and a
-forced backend 500 (route interception).
+### Current tests (36)
+Update this list and the count whenever tests are added or removed.
+- `SearchClaimsTest` (17): search by name, partial and case-insensitive, insured and other-driver scope, license, claim
+  number, VIN, no results, empty state and placeholder, pagination, open a claim and go back, unknown claim, backend
+  500 on search (route interception), column picker, sorting, foldable optional section, detail vehicle and policy fields.
+- `SearchFiltersTest` (7): loss and reported period (in and out of range), status and type filter panel, clear button.
+- `PaginationTest` (5): page sizes 10, 20, 25, 50 and the Previous button.
+- `ClaimDetailTest` (3): other drivers, "None" when there are none, load error (route interception).
+- `DeepLinkTest` (4): driver search link, period in the link, page and size in the link, reload.
+- Not covered yet: plate, policy and status & type tabs, a slow-response (loading state) test.
+- Tests using bulk-seed claims (`CLM-2026-0777`, `CLM-2026-0291`) need the `V1002` seed loaded.
 
 ## 7. How to run
 ```bash
@@ -104,14 +122,17 @@ Adapted from the SafeDrive project; only the project-agnostic parts were kept.
   logs, `data-testid` on tested elements.
 - `rules/architecture.md`: backend, frontend and insufind-ui-tests have one job each; the browser only calls `/api`; schema
   changes through Flyway only; DTOs at the API boundary; list endpoints paginated.
-- `rules/testing.md`: page objects without assertions, locator order (`getByTestId`, then role or label), no
+- `rules/ui-tests.md`: page objects without assertions, fluent navigation and fluent validation (`validators/`),
+  dynamic matching unless a unique identifier is used, locator order (`getByTestId`, then role or label), no
   `Thread.sleep`, isolated and parallel-safe tests, read-only seed data, factories and enums, tags, failure artifacts.
-- `skills/new-ui-test`: steps for adding a Playwright test.
+- `skills/new-ui-test`: steps for adding a Playwright test (fluent chain, validators, tag constants).
+- Keep docs in step: when a test, page object, validator or rule changes, update section 6 (framework and test list),
+  `rules/ui-tests.md` and `skills/new-ui-test` in the same change.
 - Not carried over: `contracts.md` and the four SafeDrive skills (Kafka, minikube and TestNG specific).
 
 ## 9. Verification at setup time
 - Backend unit tests: 2 pass. Frontend `npm run build`: passes.
-- Full stack up (Postgres, backend, Vite): 10 of 10 UI tests pass.
+- Full stack up (Postgres, backend, Vite): 36 of 36 UI tests pass (last run after ISF-4).
 - A deliberately failing test produced the trace zip and the screenshot.
 
 ## 10. Open decisions and next steps
@@ -125,4 +146,4 @@ Adapted from the SafeDrive project; only the project-agnostic parts were kept.
   setup path, plus test-data factories (`aClaim()`, `aDriver()`).
 - **Ideas to grow the suite.** Filters (status, date range), sorting, authentication and adjuster roles, a
   claim-edit flow, accessibility checks, visual snapshots, API-assisted setup, cross-browser runs, and a slow-response
-  or loading-state test.
+  or loading-state test (needs a way to hold a response without a blocking sleep).

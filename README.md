@@ -6,7 +6,7 @@ in the incident. Built as a playground for UI testing with Playwright.
 - `insufind-app/` Spring Boot 4 + Postgres + Flyway (`GET /api/claims?q=&scope=ANY|INSURED|OTHER&page=`, `GET /api/claims/{id}`)
 - `insufind-ui/` React + Vite + TypeScript
 - `insufind-integrations-tests/` JUnit 5 API integration tests (HTTP against the running stack)
-- `insufind-ui-tests/` Playwright for Java + JUnit 5 (page objects, parallel classes, trace and screenshot on failure)
+- `insufind-ui-tests/` Playwright for Java + JUnit 5 (page objects with fluent navigation, fluent validators, parallel classes, trace and screenshot on failure)
 
 ## Run it
 ```bash
