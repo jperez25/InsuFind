@@ -50,6 +50,9 @@ export default function SearchPage() {
     reportedTo: params.get('reportedTo') ?? '',
   }))
   useEffect(() => setActiveTab(tab), [tab])
+  // Folded by default; starts open when the URL already carries a period.
+  const [optionalOpen, setOptionalOpen] = useState(
+    () => ['lossFrom', 'lossTo', 'reportedFrom', 'reportedTo'].some((k) => params.has(k)))
   const [result, setResult] = useState<ClaimPage | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
@@ -168,7 +171,9 @@ export default function SearchPage() {
   const body = loading ? 'loading' : !result ? 'idle' : result.totalItems === 0 ? 'empty' : 'rows'
 
   return (
-    <section>
+    <section className="frame">
+      <header className="frame-header"><h1>Find a claim</h1></header>
+      <div className="frame-body">
       <div role="tablist" className="tabs" aria-label="Search by">
         {TABS.map((t) => (
           <button key={t.key} type="button" role="tab" data-testid={`tab-${t.key}`}
@@ -239,13 +244,21 @@ export default function SearchPage() {
           </>
         )}
 
-        <fieldset className="period">
-          <legend>Period (optional)</legend>
-          <label>Loss from <input type="date" data-testid="loss-from" {...field('lossFrom')} /></label>
-          <label>Loss to <input type="date" data-testid="loss-to" {...field('lossTo')} /></label>
-          <label>Reported from <input type="date" data-testid="reported-from" {...field('reportedFrom')} /></label>
-          <label>Reported to <input type="date" data-testid="reported-to" {...field('reportedTo')} /></label>
-        </fieldset>
+        <div className="optional-search">
+          <button type="button" className="fold-toggle" data-testid="optional-toggle" aria-expanded={optionalOpen}
+                  aria-controls="optional-fields" onClick={() => setOptionalOpen((open) => !open)}>
+            <span className="chevron" aria-hidden="true">▸</span> Optional search fields
+          </button>
+          {optionalOpen && (
+            <fieldset id="optional-fields" className="period" data-testid="optional-fields">
+              <legend>Period</legend>
+              <label>Loss from <input type="date" data-testid="loss-from" {...field('lossFrom')} /></label>
+              <label>Loss to <input type="date" data-testid="loss-to" {...field('lossTo')} /></label>
+              <label>Reported from <input type="date" data-testid="reported-from" {...field('reportedFrom')} /></label>
+              <label>Reported to <input type="date" data-testid="reported-to" {...field('reportedTo')} /></label>
+            </fieldset>
+          )}
+        </div>
 
         <button type="submit" data-testid="search-button">Search</button>
         <button type="button" data-testid="clear-button" onClick={clear}>Clear</button>
@@ -337,6 +350,7 @@ export default function SearchPage() {
       </div>
 
       <ResultsTable columns={columns} items={result?.items ?? []} body={body} />
+      </div>
     </section>
   )
 }

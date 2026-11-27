@@ -63,3 +63,64 @@ td a:hover { text-decoration: underline; }
 .empty-logo { color: #94a3b8; margin-bottom: .5rem; }
 .empty-state.is-loading .empty-logo { animation: pulse 1.2s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: .35; } }
+
+/* ---- Soft "profile card" look: striped backdrop, gray frame, white inner panel, pill controls ---- */
+:root {
+  --ink: #111113; --muted: #6b6b76; --frame: #f4f4f6; --line: #e4e4ea; --dash: #d6d6e4;
+  font-family: Inter, system-ui, sans-serif; color: var(--ink);
+}
+body { background: #f6f6f8 repeating-linear-gradient(135deg, transparent 0 14px, rgba(150,150,180,.10) 14px 15px); min-height: 100vh; }
+.app-header { background: transparent; color: var(--ink); border-bottom: 1px dashed var(--dash); }
+.app-header a { color: var(--ink); }
+main { max-width: 72rem; margin: 2rem auto; }
+.frame { background: var(--frame); border: 1px solid var(--line); border-radius: 1.75rem;
+         box-shadow: 0 20px 50px rgba(30, 30, 60, .10); overflow: visible; }
+.frame-header { padding: 1.4rem 2rem; }
+.frame-header h1 { margin: 0; font-size: 1.35rem; font-weight: 600; }
+.frame-body { background: #fff; border: 1px solid var(--line); border-radius: 1.75rem; padding: 1.5rem 2rem 2rem;
+              margin: 0 -1px -1px; }
+input, select { border: 1px solid var(--line); border-radius: 999px; background: #fff; padding: .65rem 1.1rem; color: var(--ink); }
+input[type="checkbox"], input[type="radio"] { accent-color: #111113; }
+.search-form label, .table-filters label { color: var(--muted); font-size: .85rem; gap: .4rem; }
+button { border-radius: 999px; }
+.search-form button, .pager button { border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer;
+                                    padding: .6rem 1.4rem; font-weight: 500; }
+.search-form button[type="submit"] { background: #111113; border-color: #111113; color: #fff; }
+.search-form button:hover, .pager button:hover:not(:disabled) { border-color: #b9b9c8; }
+.search-form button[type="submit"]:hover { background: #2a2a30; }
+.tabs { border-bottom: 1px dashed var(--dash); gap: .5rem; padding-bottom: .75rem; }
+.tabs button { padding: .45rem 1.1rem; color: var(--muted); }
+.tabs button[aria-selected="true"] { background: #111113; border-color: #111113; color: #fff; font-weight: 500; }
+fieldset { border: 1px dashed var(--dash); border-radius: 1rem; }
+legend { color: var(--muted); font-size: .8rem; }
+.icon-button { border-radius: 999px; border-color: var(--line); }
+.filter-panel { border-radius: 1.25rem; border-color: var(--line); }
+.filter-panel legend { color: var(--muted); }
+.results-card { border-radius: 1.25rem; border-color: var(--line); }
+th { background: var(--frame); color: var(--muted); }
+tbody tr:nth-child(even) { background: #fafafb; }
+tbody tr:hover { background: #f1f1f6; }
+td a { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.results-footer, .empty-state strong { color: var(--ink); }
+.empty-logo { color: #a9a9b8; }
+
+/* Claim detail: 5-column grid, wraps to the next row */
+.detail-card { background: #fff; border: 1px solid var(--line); border-radius: 1.25rem; padding: 1.5rem 2rem 2rem; margin-top: 1rem;
+               box-shadow: 0 20px 50px rgba(30, 30, 60, .08); }
+.detail-card h1 { margin: 0 0 1.25rem; font-size: 1.5rem; }
+.detail-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin: 0;
+               border: 1px solid var(--line); border-radius: 1rem; overflow: hidden; }
+.detail-cell { padding: .9rem 1.1rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; }
+.detail-cell dt { color: var(--muted); font-size: .7rem; letter-spacing: .05em; text-transform: uppercase; margin-bottom: .3rem; }
+.detail-cell dd { margin: 0; overflow-wrap: anywhere; }
+.detail-cell ul { margin: 0; padding-left: 1.1rem; }
+.detail-cell:nth-child(odd) { background: #fafafb; }
+@media (max-width: 64rem) { .detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .detail-cell { grid-column: span 1 !important; } }
+
+/* Foldable optional fields */
+.optional-search { flex-basis: 100%; }
+.search-form .fold-toggle { border: 0; background: none; padding: .25rem 0; color: var(--muted); cursor: pointer; font-weight: 500; }
+.search-form .fold-toggle:hover { color: var(--ink); }
+.chevron { display: inline-block; transition: transform .15s; }
+.fold-toggle[aria-expanded="true"] .chevron { transform: rotate(90deg); }
+.optional-search fieldset { margin: .5rem 0 0; }
