@@ -7,7 +7,8 @@ public final class SeedData {
     }
 
     public static final int TOTAL_CLAIMS = 12;
-    public static final int DEFAULT_PAGE_SIZE = 5;
+    public static final int DEFAULT_PAGE_SIZE = 10;
+    public static final int SMALL_PAGE_SIZE = 5;
 
     public static final String MARIA = "Maria Gonzalez";
     public static final String JOHN = "John Smith";

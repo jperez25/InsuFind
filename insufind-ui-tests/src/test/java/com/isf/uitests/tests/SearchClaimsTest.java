@@ -77,8 +77,9 @@ class SearchClaimsTest extends BaseUiTest {
     @Tag("regression")
     void emptyQueryListsAllClaimsPaginated() {
         search.searchFor("");
+        search.setPageSize(SeedData.SMALL_PAGE_SIZE);
 
-        assertThat(search.rows()).hasCount(SeedData.DEFAULT_PAGE_SIZE);
+        assertThat(search.rows()).hasCount(SeedData.SMALL_PAGE_SIZE);
         assertThat(search.resultsSummary()).containsText(SeedData.TOTAL_CLAIMS + " claims");
         assertThat(search.pageIndicator()).hasText("Page 1 of 3");
         assertThat(search.previousPageButton()).isDisabled();

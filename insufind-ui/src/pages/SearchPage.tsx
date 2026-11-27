@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { STATUS_LABEL, TYPE_LABEL, searchClaims } from '../api'
@@ -16,7 +16,7 @@ const TABS: { key: Tab; label: string }[] = [
 ]
 const STATUSES = Object.keys(STATUS_LABEL) as ClaimStatus[]
 const TYPES = Object.keys(TYPE_LABEL) as ClaimType[]
-const PAGE_SIZES = [5, 10, 25, 50]
+const PAGE_SIZES = [5, 10, 20, 25, 50]
 
 const list = (value: string | null) => (value ? value.split(',') : [])
 
@@ -26,7 +26,7 @@ export default function SearchPage() {
   const searched = params.has('tab')
   const tab = (params.get('tab') ?? 'driver') as Tab
   const page = Number(params.get('page') ?? '0')
-  const size = Number(params.get('size') ?? '5')
+  const size = Number(params.get('size') ?? '10')
   const filterStatus = params.get('fstatus') ?? ''
   const filterType = params.get('ftype') ?? ''
 
@@ -53,6 +53,20 @@ export default function SearchPage() {
   const [result, setResult] = useState<ClaimPage | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const toggleRef = useRef<HTMLButtonElement>(null)
+
+  // Clicking anywhere outside the floating panel (other than the toggle itself) closes it.
+  useEffect(() => {
+    if (!pickerOpen) return
+    const close = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (!panelRef.current?.contains(target) && !toggleRef.current?.contains(target)) setPickerOpen(false)
+    }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [pickerOpen])
 
   // The table filters narrow the search server-side and win over the tab's status/type selection.
   const criteria: SearchCriteria = {
@@ -129,6 +143,11 @@ export default function SearchPage() {
     const nextParams = new URLSearchParams(params)
     nextParams.set('cols', next.join(','))
     setParams(nextParams, { replace: true })
+  }
+
+  function toggleColumn(key: ColumnKey) {
+    const next = columns.includes(key) ? columns.filter((k) => k !== key) : [...columns, key]
+    if (next.length > 0) changeColumns(COLUMNS.map((c) => c.key).filter((k) => next.includes(k)))
   }
 
   function clear() {
@@ -234,23 +253,16 @@ export default function SearchPage() {
 
       {error && <p role="alert" data-testid="error-message">Something went wrong. Please try again.</p>}
 
+      <div className="filter-area">
       <div className="table-filters" aria-label="Table filters">
-        <label>
-          Status
-          <select data-testid="filter-status" value={filterStatus} disabled={!searched}
-                  onChange={(e) => update({ fstatus: e.target.value, page: null })}>
-            <option value="">All</option>
-            {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
-          </select>
-        </label>
-        <label>
-          Type
-          <select data-testid="filter-type" value={filterType} disabled={!searched}
-                  onChange={(e) => update({ ftype: e.target.value, page: null })}>
-            <option value="">All</option>
-            {TYPES.map((t) => <option key={t} value={t}>{TYPE_LABEL[t]}</option>)}
-          </select>
-        </label>
+        <button type="button" ref={toggleRef} className="icon-button" data-testid="columns-button"
+                aria-expanded={pickerOpen} aria-label="Columns" title="Columns"
+                onClick={() => setPickerOpen((open) => !open)}>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor"
+               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 5h18l-7 8v6l-4 2v-8z" />
+          </svg>
+        </button>
         <label>
           Rows per page
           <select data-testid="page-size" value={size}
@@ -263,24 +275,68 @@ export default function SearchPage() {
             {result.totalItems} {result.totalItems === 1 ? 'claim' : 'claims'}
           </p>
         )}
+        {result && result.totalItems > 0 && (
+          <nav className="pager" aria-label="Pagination">
+            <span data-testid="page-indicator">Page {result.page + 1} of {result.totalPages}</span>
+            <button data-testid="previous-page" disabled={result.page === 0}
+                    onClick={() => update({ page: String(result.page - 1) })}>
+              Previous
+            </button>
+            <button data-testid="next-page" disabled={result.page + 1 >= result.totalPages}
+                    onClick={() => update({ page: String(result.page + 1) })}>
+              Next
+            </button>
+          </nav>
+        )}
       </div>
 
-      <ResultsTable columns={columns} items={result?.items ?? []} body={body}
-                    onColumnsChange={changeColumns} />
-
-      {result && result.totalItems > 0 && (
-        <nav className="pager" aria-label="Pagination">
-          <button data-testid="previous-page" disabled={result.page === 0}
-                  onClick={() => update({ page: String(result.page - 1) })}>
-            Previous
-          </button>
-          <span data-testid="page-indicator">Page {result.page + 1} of {result.totalPages}</span>
-          <button data-testid="next-page" disabled={result.page + 1 >= result.totalPages}
-                  onClick={() => update({ page: String(result.page + 1) })}>
-            Next
-          </button>
-        </nav>
+      {pickerOpen && (
+        <div className="filter-panel" data-testid="filter-panel" ref={panelRef}>
+          <fieldset className="column-picker" data-testid="column-picker">
+            <legend>Columns</legend>
+            {COLUMNS.map((c) => (
+              <label key={c.key}>
+                <input type="checkbox" data-testid={`column-toggle-${c.key}`} checked={columns.includes(c.key)}
+                       onChange={() => toggleColumn(c.key)} />
+                {c.label}
+              </label>
+            ))}
+          </fieldset>
+          <fieldset className="filter-group" data-testid="filter-status">
+            <legend>Status</legend>
+            <label>
+              <input type="radio" name="fstatus" data-testid="filter-status-all" checked={!filterStatus}
+                     onChange={() => update({ fstatus: null, page: null })} />
+              All
+            </label>
+            {STATUSES.map((st) => (
+              <label key={st}>
+                <input type="radio" name="fstatus" data-testid={`filter-status-${st}`} checked={filterStatus === st}
+                       onChange={() => update({ fstatus: st, page: null })} />
+                {STATUS_LABEL[st]}
+              </label>
+            ))}
+          </fieldset>
+          <fieldset className="filter-group" data-testid="filter-type">
+            <legend>Type</legend>
+            <label>
+              <input type="radio" name="ftype" data-testid="filter-type-all" checked={!filterType}
+                     onChange={() => update({ ftype: null, page: null })} />
+              All
+            </label>
+            {TYPES.map((t) => (
+              <label key={t}>
+                <input type="radio" name="ftype" data-testid={`filter-type-${t}`} checked={filterType === t}
+                       onChange={() => update({ ftype: t, page: null })} />
+                {TYPE_LABEL[t]}
+              </label>
+            ))}
+          </fieldset>
+        </div>
       )}
+      </div>
+
+      <ResultsTable columns={columns} items={result?.items ?? []} body={body} />
     </section>
   )
 }

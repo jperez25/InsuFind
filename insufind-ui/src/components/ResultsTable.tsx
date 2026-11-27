@@ -39,13 +39,11 @@ interface Props {
   columns: ColumnKey[]
   items: ClaimSummary[]
   body: Body
-  onColumnsChange: (columns: ColumnKey[]) => void
 }
 
 // Sorting is done here, in the browser, and only reorders the rows of the current page.
-export default function ResultsTable({ columns, items, body, onColumnsChange }: Props) {
+export default function ResultsTable({ columns, items, body }: Props) {
   const [sort, setSort] = useState<{ key: ColumnKey; dir: 'asc' | 'desc' } | null>(null)
-  const [pickerOpen, setPickerOpen] = useState(false)
 
   const visible = COLUMNS.filter((c) => columns.includes(c.key))
   const sortColumn = sort && visible.find((c) => c.key === sort.key)
@@ -63,37 +61,16 @@ export default function ResultsTable({ columns, items, body, onColumnsChange }: 
     })
   }
 
-  function toggleColumn(key: ColumnKey) {
-    const next = columns.includes(key) ? columns.filter((k) => k !== key) : [...columns, key]
-    if (next.length > 0) onColumnsChange(COLUMNS.map((c) => c.key).filter((k) => next.includes(k)))
-  }
-
   const message =
-    body === 'idle' ? { id: 'table-placeholder', text: 'Run a search to see claims.' }
-    : body === 'loading' ? { id: 'loading', text: 'Searching…' }
-    : body === 'empty' ? { id: 'empty-state', text: 'No claims found.' }
+    body === 'idle' ? { id: 'table-placeholder', title: 'No claims yet', text: 'Run a search to see claims.' }
+    : body === 'loading' ? { id: 'loading', title: 'Searching…', text: 'Fetching claims, one moment.' }
+    : body === 'empty' ? { id: 'empty-state', title: 'No claims found', text: 'Try a different search or clear the filters.' }
     : null
 
   return (
     <>
-      <div className="table-tools">
-        <button type="button" data-testid="columns-button" aria-expanded={pickerOpen}
-                onClick={() => setPickerOpen((open) => !open)}>
-          Columns
-        </button>
-        {pickerOpen && (
-          <fieldset className="column-picker" data-testid="column-picker">
-            <legend>Show columns</legend>
-            {COLUMNS.map((c) => (
-              <label key={c.key}>
-                <input type="checkbox" data-testid={`column-toggle-${c.key}`} checked={columns.includes(c.key)}
-                       onChange={() => toggleColumn(c.key)} />
-                {c.label}
-              </label>
-            ))}
-          </fieldset>
-        )}
-      </div>
+      <div className="results-card">
+      <div className="table-scroll">
       <table data-testid="results-table">
         <thead>
           <tr>
@@ -109,11 +86,6 @@ export default function ResultsTable({ columns, items, body, onColumnsChange }: 
           </tr>
         </thead>
         <tbody>
-          {message && (
-            <tr>
-              <td colSpan={visible.length} data-testid={message.id}>{message.text}</td>
-            </tr>
-          )}
           {body === 'rows' && rows.map((claim) => (
             <tr key={claim.id} data-testid="result-row">
               {visible.map((c) => (
@@ -127,6 +99,19 @@ export default function ResultsTable({ columns, items, body, onColumnsChange }: 
           ))}
         </tbody>
       </table>
+      {message && (
+        <div className={`empty-state${body === 'loading' ? ' is-loading' : ''}`} data-testid={message.id}>
+          <svg className="empty-logo" viewBox="0 0 48 48" width="56" height="56" aria-hidden="true">
+            <path d="M24 4 40 10v12c0 10-7 18-16 22C15 40 8 32 8 22V10z" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
+            <circle cx="22" cy="22" r="6" fill="none" stroke="currentColor" strokeWidth="2.5" />
+            <path d="m26.5 26.5 6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+          </svg>
+          <strong>{message.title}</strong>
+          <span>{message.text}</span>
+        </div>
+      )}
+      </div>
+      </div>
     </>
   )
 }

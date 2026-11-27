@@ -68,6 +68,11 @@ public class SearchPage {
         return new ClaimDetailPage(page);
     }
 
+    public SearchPage setPageSize(int size) {
+        page.getByTestId("page-size").selectOption(String.valueOf(size));
+        return this;
+    }
+
     public SearchPage nextPage() {
         nextPageButton().click();
         return this;
